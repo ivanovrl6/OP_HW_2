@@ -124,145 +124,238 @@ int ImageProcess::updateSrcImg() {
 }
 
 int ImageProcess::dilatation(int srcImg) {
-    int* buffer=new int[this->srcImg->height*this->srcImg->height];
-    for (int i = 0; i <this->srcImg->height*this->srcImg->height ; ++i) {
-        buffer[i]=this->srcImg->srcImg[i];
+    Img* temp;
+    if(srcImg==1){
+        temp=this->srcImg;
     }
-    int buf_xc=this->srcImg->x_c;
-    int buf_yc=this->srcImg->y_c;
-    int fir_buf=this->srcImg->width;
-    int sec_buf=this->srcImg->height;
-    delete this->srcImg;
-    this->srcImg=new Img(fir_buf+2*buf_xc,sec_buf+2*buf_yc);
+    if(srcImg==0){
+        temp=this->processedImg;
+    }
+    int* buffer=new int[temp->height*temp->height];
+    for (int i = 0; i <temp->height*temp->height ; ++i) {
+        buffer[i]=temp->srcImg[i];
+    }
+    int buf_xc=temp->x_c;
+    int buf_yc=temp->y_c;
+    int fir_buf=temp->width;
+    int sec_buf=temp->height;
+    int korob_size_w=temp->width;
+    int korob_size_h=temp->height;
+    int* korob = new int [korob_size_h*korob_size_w];
+    for (int i = 0; i < temp->width*temp->height; ++i) {
+        korob[i]=temp->srcImg[i];
+    }
+    delete temp;
+    temp=new Img(fir_buf+2*buf_xc,sec_buf+2*buf_yc);
     int g=0;
-    for (int i = 0,k=0; k < this->srcImg->height; i+=this->srcImg->width,k++) {
-        for (int j = i,l=0; l <this->srcImg->width; ++j,l++) {
-            if(j==this->srcImg->height*this->srcImg->width){
+    for (int i = 0,k=0; k < temp->height; i+=temp->width,k++) {
+        for (int j = i,l=0; l <temp->width; ++j,l++) {
+            if(j==temp->height*temp->width){
                 break;
             }
             if(k<buf_yc||k>sec_buf+buf_yc-1||l<buf_xc||l>fir_buf+buf_xc-1){
-                this->srcImg->srcImg[j]=0;
+                temp->srcImg[j]=0;
             }else{
-                this->srcImg->srcImg[j]=buffer[g];
+                temp->srcImg[j]=buffer[g];
                 g++;
             }
         }
     }
     delete[] buffer;
-    buffer=new int[this->srcImg->width*this->srcImg->height];
-    for (int i = 0; i < this->srcImg->width*this->srcImg->height; ++i) {
-        buffer[i]=this->srcImg->srcImg[i];
+    buffer=new int[temp->width*temp->height];
+    for (int i = 0; i < temp->width*temp->height; ++i) {
+        buffer[i]=temp->srcImg[i];
     }
-    for (int i = 0; i < this->srcImg->height*this->srcImg->width; i++) {
-            if(mask->srcImg[mask->y_c*mask->width+mask->x_c]== this->srcImg->srcImg[i]){
-                for (int l = 0,g=0, y = i - mask->y_c*(this->srcImg->width-mask->width)-mask->y_c*mask->width-mask->x_c
-                        ;l < mask->height; ++l) {
-                    for (int x = y,f=g,k=0; k < mask->width; ++k,x++,f++) {
-                        if (mask->srcImg[f] != this->srcImg->srcImg[x]) {
-                            buffer[x]=1;
-                        }
+    for (int i = 0; i < temp->width*temp->height; i++) {
+        if(mask->srcImg[mask->y_c*mask->width+mask->x_c]== temp->srcImg[i]){
+            for (int l = 0,z=0, y = i - mask->y_c*(temp->width-mask->width)-mask->y_c*mask->width-mask->x_c
+                    ;l < mask->height; ++l) {
+                for (int x = y,f=z,k=0; k < mask->width; ++k,x++,f++) {
+                    if (mask->srcImg[f] != temp->srcImg[x]) {
+                        buffer[x]=1;
                     }
-                    g+=mask->width;
-                    y += (this->srcImg->width - mask->width)+mask->width;
                 }
+                z+=mask->width;
+                y += (temp->width - mask->width)+mask->width;
             }
+        }
     }
-    int last_w=this->srcImg->width;
-    int last_h=this->srcImg->height;
-    delete this->srcImg;
-    this->srcImg=new Img(fir_buf,sec_buf);
+    int last_w=temp->width;
+    int last_h=temp->height;
+    if(srcImg==1){
+        clearImg(this->srcImg);
+        this->srcImg= new Img(korob_size_w,korob_size_h);
+        for (int i = 0; i <korob_size_w*korob_size_h ; ++i) {
+            this->srcImg->srcImg[i]=korob[i];
+        }
+    }
+    clearImg(this->processedImg);
+    this->processedImg=new Img(this->srcImg->width,this->srcImg->height);
     int count=0;
     for (int i = 0,k=0; k < last_h; i+=last_w,k++) {
         for (int j = i,l=0; l <last_w; ++j,l++) {
             if(k<buf_yc||k>sec_buf+buf_yc-1||l<buf_xc||l>fir_buf+buf_xc-1){
                 continue;
             }else{
-                this->srcImg->srcImg[count]=buffer[j];
+                this->processedImg->srcImg[count]=buffer[j];
                 count++;
             }
         }
     }
-    FILE* flog = fopen("result.txt", "w");
-    for (int i = 0; i < this->srcImg->height*this->srcImg->width; i+=this->srcImg->width) {
-        for (int j = i,l=0; l <this->srcImg->width ; ++j,l++) {
-            fprintf(flog,"%d",this->srcImg->srcImg[j]);
-        }
-        fprintf(flog,"\n");
 
+    return 0;
+}
+int ImageProcess::erosion(int srcImg) {
+    Img* temp;
+    if(srcImg==1){
+        temp=this->srcImg;
     }
-    fclose(flog);
+    if(srcImg==0){
+        temp=this->processedImg;
+    }
+    int* buffer=new int[temp->height*temp->height];
+    for (int i = 0; i <temp->height*temp->height ; ++i) {
+        buffer[i]=temp->srcImg[i];
+    }
+    int buf_xc=temp->x_c;
+    int buf_yc=temp->y_c;
+    int fir_buf=temp->width;
+    int sec_buf=temp->height;
+    int korob_size_w=temp->width;
+    int korob_size_h=temp->height;
+    int* korob = new int [korob_size_h*korob_size_w];
+    for (int i = 0; i < temp->width*temp->height; ++i) {
+        korob[i]=temp->srcImg[i];
+    }
+    delete temp;
+    temp=new Img(fir_buf+2*buf_xc,sec_buf+2*buf_yc);
+    int g=0;
+    for (int i = 0,k=0; k < temp->height; i+=temp->width,k++) {
+        for (int j = i,l=0; l <temp->width; ++j,l++) {
+            if(j==temp->height*temp->width){
+                break;
+            }
+            if(k<buf_yc||k>sec_buf+buf_yc-1||l<buf_xc||l>fir_buf+buf_xc-1){
+                temp->srcImg[j]=0;
+            }else{
+                temp->srcImg[j]=buffer[g];
+                g++;
+            }
+        }
+    }
+    delete[] buffer;
+    buffer=new int[temp->width*temp->height];
+    for (int i = 0; i < temp->width*temp->height; ++i) {
+        buffer[i]=temp->srcImg[i];
+    }
+    for (int i = 0; i < temp->width*temp->height; i++) {
+        if(mask->srcImg[mask->y_c*mask->width+mask->x_c]== temp->srcImg[i]){
+            for (int l = 0,z=0, y = i - mask->y_c*(temp->width-mask->width)-mask->y_c*mask->width-mask->x_c
+                    ;l < mask->height; ++l) {
+                for (int x = y,f=z,k=0; k < mask->width; ++k,x++,f++) {
+                    if (mask->srcImg[f] != temp->srcImg[x]&&mask->srcImg[f]==1) {
+                        buffer[i]=0;
+                    }
+
+                }
+                z+=mask->width;
+                y += (temp->width - mask->width)+mask->width;
+            }
+        }
+    }
+    int last_w=temp->width;
+    int last_h=temp->height;
+    if(srcImg==1){
+        clearImg(this->srcImg);
+        this->srcImg= new Img(korob_size_w,korob_size_h);
+        for (int i = 0; i <korob_size_w*korob_size_h ; ++i) {
+            this->srcImg->srcImg[i]=korob[i];
+        }
+    }
+    clearImg(this->processedImg);
+    this->processedImg=new Img(this->srcImg->width,this->srcImg->height);
+    int count=0;
+    for (int i = 0,k=0; k < last_h; i+=last_w,k++) {
+        for (int j = i,l=0; l <last_w; ++j,l++) {
+            if(k<buf_yc||k>sec_buf+buf_yc-1||l<buf_xc||l>fir_buf+buf_xc-1){
+                continue;
+            }else{
+                this->processedImg->srcImg[count]=buffer[j];
+                count++;
+            }
+        }
+    }
+
     return 0;
 }
 
-int ImageProcess::erosion(int srcImg) {
-    int* buffer=new int[this->srcImg->height*this->srcImg->height];
-    for (int i = 0; i <this->srcImg->height*this->srcImg->height ; ++i) {
-        buffer[i]=this->srcImg->srcImg[i];
-    }
-    int buf_xc=this->srcImg->x_c;
-    int buf_yc=this->srcImg->y_c;
-    int fir_buf=this->srcImg->width;
-    int sec_buf=this->srcImg->height;
-    delete this->srcImg;
-    this->srcImg=new Img(fir_buf+2*buf_xc,sec_buf+2*buf_yc);
-    int g=0;
-    for (int i = 0,k=0; k < this->srcImg->height; i+=this->srcImg->width,k++) {
-        for (int j = i,l=0; l <this->srcImg->width; ++j,l++) {
-            if(j==this->srcImg->height*this->srcImg->width){
-                break;
+int ImageProcess::saveImgToFile(const char *fileName, int format) {
+    FILE* flog = fopen(fileName, "w");
+    if(format==1) {
+        for (int i = 0; i < this->srcImg->height * this->srcImg->width; i += this->srcImg->width) {
+            for (int j = i, l = 0; l < this->srcImg->width; ++j, l++) {
+                fprintf(flog, "%d", this->srcImg->srcImg[j]);
             }
-            if(k<buf_yc||k>sec_buf+buf_yc-1||l<buf_xc||l>fir_buf+buf_xc-1){
-                this->srcImg->srcImg[j]=0;
-            }else{
-                this->srcImg->srcImg[j]=buffer[g];
-                g++;
-            }
-        }
-    }
-    delete[] buffer;
-    buffer=new int[this->srcImg->width*this->srcImg->height];
-    for (int i = 0; i < this->srcImg->width*this->srcImg->height; ++i) {
-        buffer[i]=this->srcImg->srcImg[i];
-    }
-    for (int i = 0; i < this->srcImg->height*this->srcImg->width; i++) {
-        if(mask->srcImg[mask->y_c*mask->width+mask->x_c]== this->srcImg->srcImg[i]){
-            for (int l = 0,g=0, y = i - mask->y_c*(this->srcImg->width-mask->width)-mask->y_c*mask->width-mask->x_c
-                    ;l < mask->height; ++l) {
-                for (int x = y,f=g,k=0; k < mask->width; ++k,x++,f++) {
-                    if (mask->srcImg[f] != this->srcImg->srcImg[x]) {
-                        buffer[i]=0;
-                    }
-                }
-                g+=mask->width;
-                y += (this->srcImg->width - mask->width)+mask->width;
-            }
-        }
-    }
-    int last_w=this->srcImg->width;
-    int last_h=this->srcImg->height;
-    delete this->srcImg;
-    this->srcImg=new Img(fir_buf,sec_buf);
-    int count=0;
-    for (int i = 0,k=0; k < last_h; i+=last_w,k++) {
-        for (int j = i,l=0; l <last_w; ++j,l++) {
-            if(k<buf_yc||k>sec_buf+buf_yc-1||l<buf_xc||l>fir_buf+buf_xc-1){
-                continue;
-            }else{
-                this->srcImg->srcImg[count]=buffer[j];
-                count++;
-            }
-        }
-    }
-    FILE* flog = fopen("result.txt", "w");
-    for (int i = 0; i < this->srcImg->height*this->srcImg->width; i+=this->srcImg->width) {
-        for (int j = i,l=0; l <this->srcImg->width ; ++j,l++) {
-            fprintf(flog,"%d",this->srcImg->srcImg[j]);
-        }
-        fprintf(flog,"\n");
+            fprintf(flog, "\n");
 
+        }
+    }
+    if(format==0){
+        for (int i = 0; i < this->srcImg->height*this->srcImg->width; i+=this->srcImg->width) {
+            for (int j = i,l=0; l <this->srcImg->width ; ++j,l++) {
+                fprintf(flog,"%d",this->srcImg->srcImg[j]);
+            }
+        }
     }
     fclose(flog);
-    return 0;
+}
+
+int ImageProcess::loadImgFromFile(const char *fileName, int format) {
+    FILE* flog=fopen(fileName,"r");
+    int ver;
+    int ger;
+    fscanf(flog,"%d\t%d",&ver,&ger);
+    if(format==1) {
+        clearImg(this->srcImg);
+        srcImg = new Img(ver, ger);
+        char *buffer = new char[ver * ger];
+        char buf;
+        int k = 0;
+        while (fscanf(flog, "%c", &buf) != EOF) {
+            if (buf != '\n' && buf != '\t') {
+                buffer[k] = buf;
+                k++;
+            }
+        }
+        buffer[ver * ger] = '\0';
+        for (int i = 0; i < srcImg->width * srcImg->height; ++i) {
+            srcImg->srcImg[i] = buffer[i] - '0';
+        }
+    }else{
+        if(format==0){
+            clearImg(this->srcImg);
+            srcImg=new Img(ver,ger);
+            char* buffer = new char[ver*ger];
+            char buf;
+            int k=0;
+            while (fscanf(flog,"%c",&buf)!=EOF) {
+                if(buf!='\n'&& buf!='\t'){
+                    buffer[k]=buf;
+                    k++;
+                }
+            }
+            buffer[ver*ger]='\0';
+            for (int i = 0; i < srcImg->width*srcImg->height; ++i) {
+                srcImg->srcImg[i]=buffer[i]-'0';
+            }
+            fclose(flog);
+        }
+    }
+    fclose(flog);
+}
+void ImageProcess::clearImg(Img *img) {
+    delete img;
+    img= nullptr;
 }
 
 //

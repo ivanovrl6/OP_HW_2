@@ -25,7 +25,7 @@ private :
     Img* srcImg;
     Img* processedImg;
     Img* mask;
-
+    void clearImg(Img* img);
 public :
     ImageProcess();
 
