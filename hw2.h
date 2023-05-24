@@ -26,6 +26,8 @@ private :
     Img* processedImg;
     Img* mask;
     void clearImg(Img* img);
+    Img* make_buff_img(Img* temp,int width,int height);
+    void save_to_proccesed(Img* sec_temp);
 public :
     ImageProcess();
 
