@@ -55,8 +55,8 @@ build CMakeFiles/dilation.dir/main.cpp.obj: CXX_COMPILER__dilation_Debug C$:/Use
   OBJECT_DIR = CMakeFiles\dilation.dir
   OBJECT_FILE_DIR = CMakeFiles\dilation.dir
 
-build CMakeFiles/dilation.dir/hw_2.cpp.obj: CXX_COMPILER__dilation_Debug C$:/Users/User/CLionProjects/dilation/hw_2.cpp || cmake_object_order_depends_target_dilation
-  DEP_FILE = CMakeFiles\dilation.dir\hw_2.cpp.obj.d
+build CMakeFiles/dilation.dir/hw2.cpp.obj: CXX_COMPILER__dilation_Debug C$:/Users/User/CLionProjects/dilation/hw2.cpp || cmake_object_order_depends_target_dilation
+  DEP_FILE = CMakeFiles\dilation.dir\hw2.cpp.obj.d
   FLAGS = -g -fdiagnostics-color=always
   OBJECT_DIR = CMakeFiles\dilation.dir
   OBJECT_FILE_DIR = CMakeFiles\dilation.dir
@@ -69,7 +69,7 @@ build CMakeFiles/dilation.dir/hw_2.cpp.obj: CXX_COMPILER__dilation_Debug C$:/Use
 #############################################
 # Link the executable dilation.exe
 
-build dilation.exe: CXX_EXECUTABLE_LINKER__dilation_Debug CMakeFiles/dilation.dir/main.cpp.obj CMakeFiles/dilation.dir/hw_2.cpp.obj
+build dilation.exe: CXX_EXECUTABLE_LINKER__dilation_Debug CMakeFiles/dilation.dir/main.cpp.obj CMakeFiles/dilation.dir/hw2.cpp.obj
   FLAGS = -g
   LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\dilation.dir
