@@ -1,4 +1,4 @@
-#include "hw_2.h"
+#include "hw2.h"
 #include <iostream>
 #include <cstring>
 Img::Img() {

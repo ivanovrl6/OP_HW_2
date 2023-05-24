@@ -3,8 +3,8 @@
 // Created by User on 20.05.2023.
 //
 
-#ifndef DILATION_HW_2_H
-#define DILATION_HW_2_H
+#ifndef DILATION_HW2_H
+#define DILATION_HW2_H
 #include <list>
 struct Img {
         int* srcImg;
@@ -49,4 +49,4 @@ public :
 
     std::list<std::list<std::pair<int /*x*/,int /*y*/>>> getListContours();
 };
-#endif //DILATION_HW_2_H
+#endif //DILATION_HW2_H
